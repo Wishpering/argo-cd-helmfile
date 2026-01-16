@@ -75,7 +75,7 @@ RUN \
 COPY src/*.sh /usr/local/bin/
 
 RUN \
-  ln -sf /usr/local/bin/helm-v3 /usr/local/bin/helm && \
+  ln -sf /usr/local/bin/helm-v4 /usr/local/bin/helm && \
   chown root:root /usr/local/bin/* && chmod 755 /usr/local/bin/*
 
 ENV USER=argocd
@@ -106,9 +106,9 @@ ARG HELM_GIT_VERSION="1.5.2"
 ARG HELM_SECRETS_VERSION="4.7.5"
 
 RUN \
-  helm-v3 plugin install https://github.com/databus23/helm-diff   --version ${HELM_DIFF_VERSION} && \
-  helm-v3 plugin install https://github.com/aslafy-z/helm-git     --version ${HELM_GIT_VERSION} && \
-  helm-v3 plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION} && \
+  helm-v4 plugin install https://github.com/databus23/helm-diff   --version ${HELM_DIFF_VERSION}    --verify=false && \
+  helm-v4 plugin install https://github.com/aslafy-z/helm-git     --version ${HELM_GIT_VERSION}     --verify=false && \
+  helm-v4 plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION} --verify=false && \
   kubectl krew update && \
   mkdir -p ${KREW_ROOT}/bin && \
   true

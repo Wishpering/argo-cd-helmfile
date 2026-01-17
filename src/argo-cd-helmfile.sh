@@ -259,7 +259,7 @@ else
   helmfile="$(which helmfile)"
 fi
 
-echoerr "helm version $(${helm} version --short --client)"
+echoerr "helm version $(${helm} version --short)"
 echoerr "$(${helmfile} --version)"
 
 helmfile="${helmfile} --helm-binary ${helm} --no-color --allow-no-matching-release"
@@ -282,12 +282,12 @@ fi
 # TODO: parse helmfile here to detect the operative -f or --file
 
 # these should work for both v2 and v3
-helm_full_version=$(${helm} version --short --client | cut -d " " -f2)
+helm_full_version=$(${helm} version --short | cut -d " " -f2)
 helm_major_version=$(echo "${helm_full_version%+*}" | cut -d "." -f1 | sed 's/[^0-9]//g')
 helm_minor_version=$(echo "${helm_full_version%+*}" | cut -d "." -f2 | sed 's/[^0-9]//g')
 helm_patch_version=$(echo "${helm_full_version%+*}" | cut -d "." -f3 | sed 's/[^0-9]//g')
 
-if [[ ${helm_major_version} -eq 3 ]]; then
+if [[ ${helm_major_version} -ge 3 ]]; then
   # https://github.com/roboll/helmfile/issues/1015#issuecomment-563488649
   export HELMFILE_HELM3="1"
 fi
@@ -402,11 +402,11 @@ case $phase in
 
     # support added for --kube-version in 3.6
     # https://github.com/helm/helm/pull/9040
-    if [[ ${helm_major_version} -eq 3 && ${helm_minor_version} -ge 6 && "${KUBE_VERSION}" ]]; then
+    if [[ ( ${helm_major_version} -gt 3 || ( ${helm_major_version} -eq 3 && ${helm_minor_version} -ge 6 ) ) && "${KUBE_VERSION}" ]]; then
       INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} --kube-version=${KUBE_VERSION}"
     fi
 
-    if [[ ${helm_major_version} -eq 3 && "${KUBE_API_VERSIONS}" ]]; then
+    if [[ ${helm_major_version} -ge 3 && "${KUBE_API_VERSIONS}" ]]; then
       INTERNAL_HELM_API_VERSIONS=""
       for v in ${KUBE_API_VERSIONS//,/ }; do
         INTERNAL_HELM_API_VERSIONS="${INTERNAL_HELM_API_VERSIONS} --api-versions=$v"

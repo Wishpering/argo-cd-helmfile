@@ -365,7 +365,11 @@ case $phase in
       ${helmfile} repos
 
       if [[ ${helm_major_version} -eq 4 ]]; then
-        ${helm} repo update
+        if ${helm} repo list | grep -q .; then
+          ${helm} repo update
+        else
+          echoerr "no helm repositories found, skipping repo update"
+        fi
       fi
 
       cache_set_time "${cache_key}"

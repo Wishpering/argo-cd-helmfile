@@ -362,7 +362,7 @@ case $phase in
 
     if cache_is_expired "${cache_key}" "${HELMFILE_REPO_CACHE_TIMEOUT}"; then
       # https://github.com/roboll/helmfile/issues/1064
-      ${helmfile} repos --force-update
+      ${helmfile} repos
 
       if [[ ${helm_major_version} -eq 4 ]]; then
         ${helm} repo update

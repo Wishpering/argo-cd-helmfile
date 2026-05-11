@@ -11,6 +11,7 @@
 # HELMFILE_INIT_SCRIPT_FILE - path to script to execute during the init phase
 # HELMFILE_ENV_FILE - path to env file (or anything) to source
 # HELMFILE_CACHE_CLEANUP - run helmfile cache cleanup on init
+# HELMFILE_INCLUDE_CRDS - include CRDs in helmfile template output (default true for helm >= 3)
 # HELMFILE_REPO_CACHE_TIMEOUT - seconds to cache the repo update process
 # HELMFILE_USE_CONTEXT_NAMESPACE - do not set helmfile namespace to ARGOCD_APP_NAMESPACE (for multi-namespace apps)
 # HELMFILE_DISCOVERY_RESPONSE - truthy value for forced response
@@ -287,9 +288,13 @@ helm_major_version=$(echo "${helm_full_version%+*}" | cut -d "." -f1 | sed 's/[^
 helm_minor_version=$(echo "${helm_full_version%+*}" | cut -d "." -f2 | sed 's/[^0-9]//g')
 helm_patch_version=$(echo "${helm_full_version%+*}" | cut -d "." -f3 | sed 's/[^0-9]//g')
 
-if [[ ${helm_major_version} -ge 3 ]]; then
+if [[ ${helm_major_version} -eq 3 ]]; then
   # https://github.com/roboll/helmfile/issues/1015#issuecomment-563488649
   export HELMFILE_HELM3="1"
+fi
+
+if [[ ${helm_major_version} -eq 4 ]]; then
+  export HELMFILE_HELM4="1"
 fi
 
 # fix scenarios where KUBE_VERSION is improperly set with trailing +
@@ -423,6 +428,12 @@ case $phase in
       INTERNAL_HELM_TEMPLATE_OPTIONS="${INTERNAL_HELM_TEMPLATE_OPTIONS} ${INTERNAL_HELM_API_VERSIONS}"
     fi
 
+    if [[ ${helm_major_version} -ge 3 ]]; then
+      truthy_test "${HELMFILE_INCLUDE_CRDS:-true}" && {
+        INTERNAL_HELMFILE_TEMPLATE_OPTIONS="${INTERNAL_HELMFILE_TEMPLATE_OPTIONS} --include-crds"
+      }
+    fi
+
     # TODO: support post process pipeline here
     ${helmfile} \
       template \
@@ -528,6 +539,12 @@ case $phase in
     "name": "HELMFILE_CACHE_CLEANUP",
     "title": "HELMFILE_CACHE_CLEANUP",
     "tooltip": "run helmfile cache cleanup on init",
+    "itemType": "boolean"
+  },
+  {
+    "name": "HELMFILE_INCLUDE_CRDS",
+    "title": "HELMFILE_INCLUDE_CRDS",
+    "tooltip": "include CRDs in helmfile template output",
     "itemType": "boolean"
   },
   {
